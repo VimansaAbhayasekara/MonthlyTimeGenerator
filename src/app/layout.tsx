@@ -2,6 +2,7 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { MainNav } from "@/components/main-nav";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,6 +18,7 @@ export default function RootLayout({
           <MainNav />
           <main className="p-8">{children}</main>
         </div>
+        <Toaster position="top-center" />
       </body>
     </html>
   );

@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { Holiday } from "@/types";
 import { parseISO } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { toast } from "react-hot-toast"; // Import react-hot-toast
 
 export function HolidayForm({
   holiday,
@@ -43,15 +44,15 @@ export function HolidayForm({
     // Validation 2: Check if the date or name already exists in the holidays list
     const formatDate = (date: string | Date) => new Date(date).toISOString().split("T")[0];
 
-const isDuplicateDate = holidays.some(
-  (h) => formatDate(h.date) === formatDate(utcDate) && h.id !== holiday?.id
-);
+    const isDuplicateDate = holidays.some(
+      (h) => formatDate(h.date) === formatDate(utcDate) && h.id !== holiday?.id
+    );
 
     const isDuplicateName = name && holidays.some(
       (h) => h.name === name && h.id !== holiday?.id
     );
 
-    if (isDuplicateDate && isDuplicateName ){
+    if (isDuplicateDate && isDuplicateName) {
       setError("A holiday with this date & name already exists.");
       return;
     }
@@ -66,8 +67,6 @@ const isDuplicateDate = holidays.some(
       return;
     }
 
-    
-
     try {
       if (holiday) {
         // Update existing holiday
@@ -75,20 +74,30 @@ const isDuplicateDate = holidays.some(
           .from("holidays")
           .update({ date: utcDate.toISOString(), name })
           .eq("id", holiday.id);
+        
+        // Success Toast for Edit
+        toast.success("Holiday updated successfully!");
       } else {
         // Insert new holiday
         await supabase.from("holidays").insert({ date: utcDate.toISOString(), name });
+
+        // Success Toast for Add
+        toast.success("Holiday added successfully!");
       }
 
       onSuccess(); // Trigger success callback
       onOpenChange?.(false); // Close the dialog
       setDate(undefined); // Reset date
       setName(""); // Reset name
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
+
+    } catch {
       setError("An error occurred while saving the holiday. Please try again.");
+
+      // Error Toast
+      toast.error("Failed to save the holiday. Please try again.", { style: { backgroundColor: "#FF4B4B" } });
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

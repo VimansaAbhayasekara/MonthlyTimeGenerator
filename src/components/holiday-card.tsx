@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Edit } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase/client";
+import { toast } from "react-hot-toast";
 
 export function HolidayCard({
   holiday,
@@ -23,8 +24,14 @@ export function HolidayCard({
   const [showForm, setShowForm] = useState(false);
 
   const handleDelete = async () => {
+    try {
     await supabase.from("holidays").delete().eq("id", holiday.id);
     onDelete();
+    toast.success("Holiday deleted successfully!");
+  } catch {
+    // Error Toast for Delete
+    toast.error("Failed to delete the holiday. Please try again.");
+  }
   };
 
   return (
