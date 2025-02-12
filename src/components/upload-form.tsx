@@ -7,13 +7,16 @@ import { supabase } from "@/lib/supabase/client";
 import { generateReport } from "@/lib/report-generator";
 import { ReportTable } from "@/components/report-table";
 import { ReportRow } from "@/types";
+import { CheckCircle, XCircle } from "lucide-react"; // Import icons
 
 export function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [reportData, setReportData] = useState<ReportRow[]>([]);
+  const [generateClicked, setGenerateClicked] = useState(false);
 
   const handleGenerate = async () => {
+    setGenerateClicked(true);
     if (!file) return;
 
     const data = await file.arrayBuffer();
@@ -43,19 +46,31 @@ export function UploadForm() {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-4 items-center">
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="relative flex items-center w-full sm:w-80 md:w-96 max-w-md">
         <Input
           type="file"
           accept=".xlsx,.xls"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="max-w-md"
+          className="w-full pr-14 truncate" // Increased padding for icons
         />
+        {/* Validation Icon */}
+          {generateClicked && !file ? (
+            <XCircle className="absolute right-3 h-5 w-5 text-red-500" />
+          ) : file ? (
+            <CheckCircle className="absolute right-3 h-5 w-5 text-green-500" />
+          ) : null}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
         <Button onClick={handleGenerate}>Generate</Button>
-        
-        <Button className="bg-cyan-500 hover:bg-cyan-600 text-white" onClick={handleDownload} disabled={reportData.length === 0}>
+        <Button
+          className="bg-cyan-500 hover:bg-cyan-600 text-white"
+          onClick={handleDownload}
+          disabled={reportData.length === 0}
+        >
           Download
         </Button>
-
         <Button
           variant="outline"
           onClick={() => setShowPreview(!showPreview)}
@@ -64,6 +79,7 @@ export function UploadForm() {
           {showPreview ? "Hide Preview" : "Show Preview"}
         </Button>
       </div>
+    </div>
 
       {showPreview && reportData.length > 0 && (
         <div className="space-y-4">
