@@ -37,8 +37,9 @@ export function UploadForm() {
 
   const handleDownload = () => {
     if (reportData.length === 0) return;
-
-    const ws = XLSX.utils.json_to_sheet(reportData);
+  
+    const validData = reportData.filter(row => row.User && row["Project Code"]); // Filter valid rows
+    const ws = XLSX.utils.json_to_sheet(validData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Report");
     XLSX.writeFile(wb, "report.xlsx");

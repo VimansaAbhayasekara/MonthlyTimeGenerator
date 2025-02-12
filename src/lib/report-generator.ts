@@ -4,22 +4,36 @@ import { ReportRow } from "@/types";
 export function generateReport(data: unknown[][], holidays: Date[]): ReportRow[] {
   // Skip first two rows (titles) and get header from third row
   const [, , headerRow, ...dataRows] = data as (string | number)[][];
-  
+
   // Extract date columns from header row (indexes 2 to -2 to exclude Total)
   const dateColumns = headerRow.slice(2, -1) as string[];
 
-  return dataRows.map(row => {
-    // First column: User, Second column: Project
+  // Filter out invalid rows before processing
+  const validRows = dataRows.filter((row) => {
     const user = String(row[1]);
     const project = String(row[2]);
-    const dailyHours = row.slice(2, -1) as (string | number)[]; // Exclude Total column
-    
+    const dailyHours = row.slice(2, -1) as (string | number)[];
+
+    // Ensure user, project, and dailyHours are valid
+    return (
+      user && // User is not empty
+      project && // Project is not empty
+      dailyHours.length > 0 && // Daily hours exist
+      dailyHours.some((hours) => hours !== undefined && hours !== null) // At least one valid hour entry
+    );
+  });
+
+  return validRows.map((row) => {
+    const user = String(row[1]);
+    const project = String(row[2]);
+    const dailyHours = row.slice(2, -1) as (string | number)[];
+
     let total = 0;
 
     dailyHours.forEach((hours, index) => {
       const dateStr = dateColumns[index];
       const date = parseExcelDate(dateStr);
-      
+
       if (date && !isHoliday(date, holidays)) {
         const numericHours = typeof hours === 'string' ? parseFloat(hours) : hours;
         total += Number.isNaN(numericHours) ? 0 : numericHours;
@@ -29,7 +43,7 @@ export function generateReport(data: unknown[][], holidays: Date[]): ReportRow[]
     return {
       User: user,
       "Project Code": project,
-      "Total Hours": Number(total.toFixed(2)) // Round to 2 decimal places
+      "Total Hours": Number(total.toFixed(2)), // Round to 2 decimal places
     };
   });
 }

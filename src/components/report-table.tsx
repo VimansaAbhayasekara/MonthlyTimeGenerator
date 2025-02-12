@@ -19,7 +19,7 @@ export function ReportTable({ data }: { data: ReportRow[] }) {
   const filteredData = data.filter((row) => {
     const matchesUser = selectedUser ? row.User === selectedUser : true;
     const matchesProject = selectedProject ? row["Project Code"] === selectedProject : true;
-    return matchesUser && matchesProject;
+    return matchesUser && matchesProject && row.User && row["Project Code"]; // Ensure valid rows
   });
 
   return (
