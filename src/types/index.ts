@@ -11,3 +11,8 @@ export interface Holiday {
     "Project Code": string;
     "Total Hours": number;
   }
+
+  export interface ChartData {
+    project: string;
+    totalHours: number;
+  }  

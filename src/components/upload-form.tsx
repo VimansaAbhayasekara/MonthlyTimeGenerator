@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import * as XLSX from "xlsx";
@@ -9,6 +9,7 @@ import { ReportTable } from "@/components/report-table";
 import { ReportRow } from "@/types";
 import { CheckCircle, XCircle } from "lucide-react"; // Import icons
 import { toast } from "react-hot-toast"; // Import react-hot-toast
+import { ProjectHoursChart } from "@/components/project-hours-chart";
 
 export function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -43,6 +44,23 @@ export function UploadForm() {
       toast.error("Failed to generate report. Please try again.");
     }
   };
+
+  const chartData = useMemo(() => {
+    const projectMap = new Map<string, number>();
+    
+    reportData.forEach((row) => {
+      const project = row["Project Code"];
+      const hours = row["Total Hours"];
+      if (project && typeof hours === 'number') {
+        projectMap.set(project, (projectMap.get(project) || 0) + hours);
+      }
+    });
+
+    return Array.from(projectMap.entries()).map(([project, totalHours]) => ({
+      project,
+      totalHours: Number(totalHours.toFixed(2))
+    })).sort((a, b) => b.totalHours - a.totalHours);
+  }, [reportData]);
 
   const handleDownload = () => {
     if (reportData.length === 0) return;
@@ -100,13 +118,18 @@ export function UploadForm() {
       </div>
 
       {showPreview && reportData.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-amber-400">
-            Report Preview
-          </h3>
-          <ReportTable data={reportData} />
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-amber-400">
+              Report Preview
+            </h3>
+            <ReportTable data={reportData} />
+          </div>
+
+          <ProjectHoursChart data={chartData} />
         </div>
       )}
+
     </div>
   );
 }
