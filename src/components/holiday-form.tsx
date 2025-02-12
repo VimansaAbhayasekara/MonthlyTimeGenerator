@@ -4,48 +4,100 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase/client";
 import { Holiday } from "@/types";
+import { parseISO } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-export function HolidayForm({ 
-  holiday, 
-  onSuccess 
-}: { 
-  holiday?: Holiday; 
-  onSuccess: () => void 
+export function HolidayForm({
+  holiday,
+  onSuccess,
+  open,
+  onOpenChange,
+  holidays, // Pass the list of existing holidays for validation
+}: {
+  holiday?: Holiday;
+  onSuccess: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  holidays: Holiday[]; // List of existing holidays
 }) {
   const [date, setDate] = useState<Date | undefined>(
-    holiday?.date ? new Date(holiday.date) : undefined
+    holiday?.date ? toZonedTime(parseISO(holiday.date), "UTC") : undefined
   );
   const [name, setName] = useState(holiday?.name || "");
-  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null); // For displaying validation errors
 
   const handleSubmit = async () => {
-    if (!date || !name) return;
-    
-    if (holiday) {
-      await supabase
-        .from("holidays")
-        .update({ date: date.toISOString(), name })
-        .eq("id", holiday.id);
-    } else {
-      await supabase.from("holidays").insert({ date: date.toISOString(), name });
+    setError(null); // Reset error message
+
+    // Validation 1: Check if date is provided
+    if (!date) {
+      setError("Please provide a date.");
+      return;
     }
+
+    // Convert to UTC date without time
+    const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+    // Validation 2: Check if the date or name already exists in the holidays list
+    const formatDate = (date: string | Date) => new Date(date).toISOString().split("T")[0];
+
+const isDuplicateDate = holidays.some(
+  (h) => formatDate(h.date) === formatDate(utcDate) && h.id !== holiday?.id
+);
+
+    const isDuplicateName = name && holidays.some(
+      (h) => h.name === name && h.id !== holiday?.id
+    );
+
+    if (isDuplicateDate && isDuplicateName ){
+      setError("A holiday with this date & name already exists.");
+      return;
+    }
+
+    if (isDuplicateDate) {
+      setError("A holiday with this date already exists.");
+      return;
+    }
+
+    if (isDuplicateName) {
+      setError("A holiday with this name already exists.");
+      return;
+    }
+
     
-    onSuccess();
-    setOpen(false);
+
+    try {
+      if (holiday) {
+        // Update existing holiday
+        await supabase
+          .from("holidays")
+          .update({ date: utcDate.toISOString(), name })
+          .eq("id", holiday.id);
+      } else {
+        // Insert new holiday
+        await supabase.from("holidays").insert({ date: utcDate.toISOString(), name });
+      }
+
+      onSuccess(); // Trigger success callback
+      onOpenChange?.(false); // Close the dialog
+      setDate(undefined); // Reset date
+      setName(""); // Reset name
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      setError("An error occurred while saving the holiday. Please try again.");
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>{holiday ? "Edit" : "Add Holiday"}</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* Only show trigger button when not editing */}
+      {!holiday && (
+        <DialogTrigger asChild>
+          <Button>Add Holiday</Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{holiday ? "Edit" : "Add"} Holiday</DialogTitle>
@@ -56,12 +108,14 @@ export function HolidayForm({
             selected={date}
             onSelect={setDate}
             className="rounded-md border"
+            required // Make date mandatory
           />
           <Input
-            placeholder="Holiday Name"
+            placeholder="Holiday Name (Optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
+          {error && <p className="text-sm text-red-500">{error}</p>} {/* Display error message */}
           <Button onClick={handleSubmit}>Save</Button>
         </div>
       </DialogContent>
