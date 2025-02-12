@@ -62,7 +62,7 @@ export function UploadForm() {
           ) : null}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap ml-3 gap-3">
         <Button onClick={handleGenerate}>Generate</Button>
         <Button
           className="bg-cyan-500 hover:bg-cyan-600 text-white"
