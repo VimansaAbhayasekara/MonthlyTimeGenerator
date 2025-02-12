@@ -51,15 +51,17 @@ export function UploadForm() {
           className="max-w-md"
         />
         <Button onClick={handleGenerate}>Generate</Button>
+        
+        <Button className="bg-cyan-500 hover:bg-cyan-600 text-white" onClick={handleDownload} disabled={reportData.length === 0}>
+          Download
+        </Button>
+
         <Button
           variant="outline"
           onClick={() => setShowPreview(!showPreview)}
           disabled={reportData.length === 0}
         >
           {showPreview ? "Hide Preview" : "Show Preview"}
-        </Button>
-        <Button onClick={handleDownload} disabled={reportData.length === 0}>
-          Download
         </Button>
       </div>
 
