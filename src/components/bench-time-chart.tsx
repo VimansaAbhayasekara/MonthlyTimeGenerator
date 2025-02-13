@@ -18,7 +18,7 @@ export function BenchTimeChart({ data }: { data: { user: string; benchTime: numb
         <BarChart data={chartData}>
           <XAxis dataKey="user" stroke="#888888" />
           <YAxis stroke="#888888" />
-          <Tooltip />
+          <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: 'none' }} />
           <Legend />
           <Bar dataKey="benchTime" fill="#f59e0b" name="Bench Time (Hours)" />
           <Bar dataKey="overtime" fill="#ef4444" name="Overtime (Hours)" />
