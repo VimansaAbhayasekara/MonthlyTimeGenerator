@@ -15,7 +15,8 @@ import { BenchTimeChart } from "@/components/bench-time-chart";
 
 export function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
+  const [showTables, setShowTables] = useState(false); // State for tables visibility
+  const [showGraphs, setShowGraphs] = useState(false); // State for graphs visibility
   const [reportData, setReportData] = useState<ReportRow[]>([]);
   const [generateClicked, setGenerateClicked] = useState(false);
 
@@ -37,7 +38,7 @@ export function UploadForm() {
       );
 
       setReportData(report);
-      setShowPreview(true);
+      setShowTables(true);
 
       // Success toast message
       toast.success("Report generated successfully!");
@@ -131,29 +132,46 @@ export function UploadForm() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => setShowPreview(!showPreview)}
+            onClick={() => setShowTables(!showTables)}
             disabled={reportData.length === 0}
           >
-            {showPreview ? "Hide Preview" : "Show Preview"}
+            {showTables ? "Hide Tables" : "Show Tables"}
+          </Button>
+
+          {/* Button to toggle graphs */}
+          <Button
+            variant="outline"
+            onClick={() => setShowGraphs(!showGraphs)}
+            disabled={reportData.length === 0}
+          >
+            {showGraphs ? "Hide Charts" : "Show Charts"}
           </Button>
         </div>
       </div>
 
-      {showPreview && reportData.length > 0 && (
+      {/* Conditionally render tables and graphs based on state */}
+      {(showTables || showGraphs) && reportData.length > 0 && (
         <div className="space-y-8">
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-amber-400">
-              Report Preview
-            </h3>
-            <ReportTable data={reportData} />
-          </div>
+          {/* Show tables if showTables is true */}
+          {showTables && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-amber-400">
+                Report Preview
+              </h3>
+              <ReportTable data={reportData} />
+              <BenchTimeTable data={reportData} />
+            </div>
+          )}
 
-          <ProjectHoursChart data={chartData} />
-          <BenchTimeTable data={reportData} />
-          <BenchTimeChart data={benchTimeData} />
+          {/* Show graphs if showGraphs is true */}
+          {showGraphs && (
+            <div className="space-y-8">
+              <ProjectHoursChart data={chartData} />
+              <BenchTimeChart data={benchTimeData} />
+            </div>
+          )}
         </div>
       )}
-
     </div>
   );
 }
