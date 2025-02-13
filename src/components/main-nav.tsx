@@ -14,7 +14,7 @@ export function MainNav() {
     {/* Left side (Logo) */}
     <div className="flex items-center space-x-6">
       <Link href="/" className="flex items-center space-x-2">
-        <img src="/zone-logo.png" alt="Logo" className="h-12 w-12" />
+        <img src="/logo.png" alt="Logo" className="h-12 w-12" />
         <span className="text-xl font-bold">Zoneway</span>
       </Link>
     </div>
