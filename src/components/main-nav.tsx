@@ -15,7 +15,7 @@ export function MainNav() {
     <div className="flex items-center space-x-6">
       <Link href="/" className="flex items-center space-x-2">
         <img src="/logo.png" alt="Logo" className="h-12 w-12" />
-        <span className="text-xl font-bold">Zoneway</span>
+        <span className="text-xl font-bold">MonthTrack</span>
       </Link>
     </div>
 
