@@ -12,6 +12,7 @@ import { toast } from "react-hot-toast"; // Import react-hot-toast
 import { ProjectHoursChart } from "@/components/project-hours-chart";
 import { BenchTimeTable } from "@/components/bench-time-table";
 import { BenchTimeChart } from "@/components/bench-time-chart";
+import { ProjectAllocationChart } from "@/components/project-allocation-chart";
 
 export function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -63,6 +64,26 @@ export function UploadForm() {
       project,
       totalHours: Number(totalHours.toFixed(2))
     })).sort((a, b) => b.totalHours - a.totalHours);
+  }, [reportData]);
+
+  const projectAllocationData = useMemo(() => {
+    const projectMap = new Map<string, Set<string>>();
+  
+    reportData.forEach((row) => {
+      const project = row["Project Code"];
+      const user = row.User;
+      if (project && user) {
+        if (!projectMap.has(project)) {
+          projectMap.set(project, new Set());
+        }
+        projectMap.get(project)?.add(user);
+      }
+    });
+  
+    return Array.from(projectMap.entries()).map(([project, users]) => ({
+      project,
+      employees: users.size,
+    }));
   }, [reportData]);
 
   const handleDownload = () => {
@@ -170,7 +191,9 @@ export function UploadForm() {
           {showGraphs && (
             <div className="space-y-8">
               <ProjectHoursChart data={chartData} />
+              <ProjectAllocationChart data={projectAllocationData} />
               <BenchTimeChart data={benchTimeData} />
+              
             </div>
           )}
         </div>

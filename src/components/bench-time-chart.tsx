@@ -18,10 +18,10 @@ export function BenchTimeChart({ data }: { data: { user: string; benchTime: numb
         <BarChart data={chartData}>
           <XAxis dataKey="user" stroke="#888888" />
           <YAxis stroke="#888888" />
-          <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: 'none' }} />
+          <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: 6 }} />
           <Legend />
-          <Bar dataKey="benchTime" fill="#f59e0b" name="Bench Time (Hours)" />
-          <Bar dataKey="overtime" fill="#ef4444" name="Overtime (Hours)" />
+          <Bar dataKey="benchTime" fill="#f59e0b" name="Bench Time (Hours)" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="overtime" fill="#ef4444" name="Overtime (Hours)" radius={[2, 2, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
