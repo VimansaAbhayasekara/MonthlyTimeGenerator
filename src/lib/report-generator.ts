@@ -1,4 +1,3 @@
-// src/lib/report-generator.ts
 import { ReportRow } from "@/types";
 
 export function generateReport(data: unknown[][], holidays: Date[]): ReportRow[] {
@@ -7,6 +6,12 @@ export function generateReport(data: unknown[][], holidays: Date[]): ReportRow[]
 
   // Extract date columns from header row (indexes 2 to -2 to exclude Total)
   const dateColumns = headerRow.slice(2, -1) as string[];
+
+  // Calculate total working days in the month (excluding holidays and weekends)
+  // const workingDays = dateColumns.filter((dateStr) => {
+  //   const date = parseExcelDate(dateStr);
+  //   return date && !isHoliday(date, holidays) && !isWeekend(date);
+  // }).length;
 
   // Filter out invalid rows before processing
   const validRows = dataRows.filter((row) => {
@@ -21,6 +26,46 @@ export function generateReport(data: unknown[][], holidays: Date[]): ReportRow[]
       dailyHours.length > 0 && // Daily hours exist
       dailyHours.some((hours) => hours !== undefined && hours !== null) // At least one valid hour entry
     );
+  });
+
+  // Group daily allocated hours by user and date
+  const userDailyAllocatedHours: Record<string, Record<string, number>> = {};
+
+  validRows.forEach((row) => {
+    const user = String(row[0]);
+    const dailyHours = row.slice(2, -1) as (string | number)[];
+
+    dailyHours.forEach((hours, index) => {
+      const dateStr = dateColumns[index];
+      const date = parseExcelDate(dateStr);
+
+      if (date && !isHoliday(date, holidays) && !isWeekend(date)) {
+        const numericHours = typeof hours === 'string' ? parseFloat(hours) : hours;
+        if (!Number.isNaN(numericHours)) {
+          if (!userDailyAllocatedHours[user]) {
+            userDailyAllocatedHours[user] = {};
+          }
+          userDailyAllocatedHours[user][dateStr] = (userDailyAllocatedHours[user][dateStr] || 0) + numericHours;
+        }
+      }
+    });
+  });
+
+  // Calculate bench time for each user
+  const userBenchTime: Record<string, number> = {};
+
+  Object.entries(userDailyAllocatedHours).forEach(([user, dailyHours]) => {
+    let totalBenchTime = 0;
+
+    Object.entries(dailyHours).forEach(([dateStr, allocatedHours]) => {
+      const date = parseExcelDate(dateStr);
+      if (date && !isHoliday(date, holidays) && !isWeekend(date)) {
+        totalBenchTime += (8 - allocatedHours); // Bench time per day
+      }
+    });
+
+
+    userBenchTime[user] = totalBenchTime;
   });
 
   return validRows.map((row) => {
@@ -44,8 +89,15 @@ export function generateReport(data: unknown[][], holidays: Date[]): ReportRow[]
       User: user,
       "Project Code": project,
       "Total Hours": Number(total.toFixed(2)), // Round to 2 decimal places
+      "Bench Time": Number((userBenchTime[user] || 0).toFixed(2)), // Add bench time to the report
     };
   });
+}
+
+
+function isWeekend(date: Date): boolean {
+  const dayOfWeek = date.getDay();
+  return dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
 }
 
 // Improved date parsing

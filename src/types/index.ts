@@ -10,6 +10,7 @@ export interface Holiday {
     User: string;
     "Project Code": string;
     "Total Hours": number;
+    "Bench Time"?: number; 
   }
 
   export interface ChartData {

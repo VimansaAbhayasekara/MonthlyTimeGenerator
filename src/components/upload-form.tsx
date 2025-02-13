@@ -10,6 +10,8 @@ import { ReportRow } from "@/types";
 import { CheckCircle, XCircle } from "lucide-react"; // Import icons
 import { toast } from "react-hot-toast"; // Import react-hot-toast
 import { ProjectHoursChart } from "@/components/project-hours-chart";
+import { BenchTimeTable } from "@/components/bench-time-table";
+import { BenchTimeChart } from "@/components/bench-time-chart";
 
 export function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -80,6 +82,26 @@ export function UploadForm() {
     }
   };
 
+  const benchTimeData = useMemo(() => {
+    const userBenchTime: Record<string, number> = {};
+  
+    reportData.forEach((row) => {
+      const user = row.User;
+      const benchTime = row["Bench Time"];
+      if (user && benchTime !== undefined) {
+        userBenchTime[user] =  benchTime;
+      }
+    });
+  
+    // Filter users with non-zero bench time
+    return Object.entries(userBenchTime)
+      .filter(([, benchTime]) => benchTime !== 0) // Exclude users with 0 bench time
+      .map(([user, benchTime]) => ({
+        user,
+        benchTime: Number(benchTime.toFixed(2)),
+      }));
+  }, [reportData]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 items-center">
@@ -127,6 +149,8 @@ export function UploadForm() {
           </div>
 
           <ProjectHoursChart data={chartData} />
+          <BenchTimeTable data={reportData} />
+          <BenchTimeChart data={benchTimeData} />
         </div>
       )}
 
