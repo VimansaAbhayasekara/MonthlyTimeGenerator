@@ -38,7 +38,7 @@ export function UploadForm() {
       );
 
       setReportData(report);
-      setShowTables(true);
+      setShowGraphs(true);
 
       // Success toast message
       toast.success("Report generated successfully!");
@@ -130,13 +130,6 @@ export function UploadForm() {
           >
             Download
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => setShowTables(!showTables)}
-            disabled={reportData.length === 0}
-          >
-            {showTables ? "Hide Tables" : "Show Tables"}
-          </Button>
 
           {/* Button to toggle graphs */}
           <Button
@@ -146,6 +139,16 @@ export function UploadForm() {
           >
             {showGraphs ? "Hide Charts" : "Show Charts"}
           </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => setShowTables(!showTables)}
+            disabled={reportData.length === 0}
+          >
+            {showTables ? "Hide Tables" : "Show Tables"}
+          </Button>
+
+          
         </div>
       </div>
 
