@@ -10,9 +10,9 @@ export function generateReport(data: unknown[][], holidays: Date[]): ReportRow[]
 
   // Filter out invalid rows before processing
   const validRows = dataRows.filter((row) => {
-    const user = String(row[1]);
-    const project = String(row[2]);
-    const dailyHours = row.slice(2, -1) as (string | number)[];
+    const user = String(row[0]); // Column A (index 0) is now user names
+    const project = String(row[1]); // Column B (index 1) is now project codes
+    const dailyHours = row.slice(2, -1) as (string | number)[]; // Columns C onwards are times
 
     // Ensure user, project, and dailyHours are valid
     return (
@@ -24,9 +24,9 @@ export function generateReport(data: unknown[][], holidays: Date[]): ReportRow[]
   });
 
   return validRows.map((row) => {
-    const user = String(row[1]);
-    const project = String(row[2]);
-    const dailyHours = row.slice(2, -1) as (string | number)[];
+    const user = String(row[0]); // Column A (index 0) is now user names
+    const project = String(row[1]); // Column B (index 1) is now project codes
+    const dailyHours = row.slice(2, -1) as (string | number)[]; // Columns C onwards are times
 
     let total = 0;
 
